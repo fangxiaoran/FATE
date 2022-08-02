@@ -78,8 +78,6 @@ build_python() {
     fi
     cd ${package_dir}
     docker build -t ${image_path} . \
-                --build-arg http_proxy=${http_proxy} \
-                --build-arg https_proxy=${https_proxy} \
                 --build-arg source_dir=${source_dir} \
                 --build-arg pip_index_url=${pip_index_url} \
                 --build-arg repo_file=${repo_file} \
