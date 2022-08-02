@@ -51,3 +51,35 @@ RUN if [[ -z ${pip_index_url} ]]; then pip install --upgrade pip && pip install 
     pip install -r ./requirements.txt -i ${pip_index_url} --trusted-host ${pip_index_host};fi
 # clean
 RUN rm -rf requirements.txt install_os_dependencies.sh init.sh *.repo
+
+# upgrade gcc
+RUN yum install -y git flex devtoolset-8 numactl-devel
+SHELL ["/usr/bin/scl", "enable", "devtoolset-8"]
+
+# install cmake
+RUN wget http://cmake.org/files/v3.22/cmake-3.22.0.tar.gz \
+    && tar zxf cmake-3.22.0.tar.gz && cd cmake-3.22.0 \
+    && ./configure && make install -j \
+    && cd .. && rm -rf cmake-*
+
+# install nasm
+RUN wget --no-check-certificate https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.gz \
+    && tar zxf nasm-2.15.05.tar.gz && cd nasm-2.15.05 \
+    && ./configure --prefix=/usr/local/nasm && make -j && make install \
+    && ln -s /usr/local/nasm/bin/nasm /usr/bin/nasm \
+    && ln -s /usr/local/nasm/bin/ndisasm /usr/bin/ndisasm \
+    && cd .. && rm -rf nasm-*
+
+# install openssl
+RUN wget --no-check-certificate http://www.openssl.org/source/openssl-1.1.0l.tar.gz \
+    && tar zxf openssl-1.1.0l.tar.gz && cd openssl-1.1.0l \
+    && ./config --prefix=/usr/local/openssl && make -j && make install \
+    && ln -sf /usr/local/openssl/bin/openssl /usr/bin/openssl \
+    && echo "/usr/local/openssl/lib" >> /etc/ld.so.conf && ldconfig -v \
+    && cd .. && rm -rf openssl-*
+ENV OPENSSL_ROOT_DIR=/usr/local/openssl
+
+# install ipcl-python
+RUN git clone https://github.com/intel/pailliercryptolib_python.git \
+    && cd pailliercryptolib_python && python setup.py install \
+    && cd .. && rm -rf pailliercryptolib_python
