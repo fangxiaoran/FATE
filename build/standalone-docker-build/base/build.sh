@@ -32,6 +32,9 @@ build_python() {
   echo "[INFO] start ${module} base image"
   image_name="fate_${module}_base"
   image_path=${image_namespace}/${image_name}:${image_tag}
+  if [[ ${version_tag} == *"ipcl"* ]]; then
+    image_path=${image_path}-ipcl
+  fi
 
   cd ${source_dir}
 
@@ -63,6 +66,10 @@ build_python() {
       ./bin/install_os_dependencies.sh \
       ./build/standalone-docker-build/base/python/init.sh \
       ./build/standalone-docker-build/base/python/Dockerfile ${package_dir}
+    if [[ ${version_tag} == *"ipcl"* ]]; then
+      rm -f ${package_dir}/Dockerfile
+      cp ./build/standalone-docker-build/base/ipcl/Dockerfile ${package_dir}
+    fi
     if [[ -f ${repo_file_path} ]];then
       cp ${repo_file_path} ${package_dir}/CentOS-Base.repo
       repo_file="CentOS-Base.repo"
@@ -71,6 +78,8 @@ build_python() {
     fi
     cd ${package_dir}
     docker build -t ${image_path} . \
+                --build-arg http_proxy=${http_proxy} \
+                --build-arg https_proxy=${https_proxy} \
                 --build-arg source_dir=${source_dir} \
                 --build-arg pip_index_url=${pip_index_url} \
                 --build-arg repo_file=${repo_file} \
@@ -82,10 +91,10 @@ build_python() {
 }
 
 usage() {
-    echo "usage: $0 -r {repo file path} -i {pip index url}"
+    echo "usage: $0 -r {repo file path} -i {pip index url} -t {version tag}"
 }
 
-while getopts "m:r:i:" opt; do
+while getopts "m:r:i:t:" opt; do
   case $opt in
     m)
       module=$OPTARG
@@ -95,6 +104,9 @@ while getopts "m:r:i:" opt; do
       ;;
     i)
       pip_index_url=$OPTARG
+      ;;
+    t)
+      version_tag=$OPTARG
       ;;
     :)
       echo "option -$OPTARG requires an argument."

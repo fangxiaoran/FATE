@@ -68,7 +68,7 @@ mkdir -p ${package_dir}
 build() {
   cd ${source_dir}
 
-  bash build/standalone-docker-build/base/build.sh -m "python" -r ${repo_file_path} -i ${pip_index_url}
+  bash build/standalone-docker-build/base/build.sh -m "python" -r ${repo_file_path} -i ${pip_index_url} -t ${version_tag}
 
   cp ${source_dir}/build/standalone-docker-build/docker-entrypoint.sh ${package_dir}/
   cp ${source_dir}/build/standalone-docker-build/Dockerfile ${package_dir}/
