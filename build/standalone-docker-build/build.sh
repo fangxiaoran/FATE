@@ -106,7 +106,11 @@ build() {
       exit 1
     fi
   fi
-  docker build -t ${image_path} . --build-arg version=${version}
+  if [[ ${version_tag} == *"ipcl"* ]]; then
+    docker build -t ${image_path} . --build-arg version=${version}-ipcl
+  else
+    docker build -t ${image_path} . --build-arg version=${version}
+  fi
 }
 
 packaging() {
